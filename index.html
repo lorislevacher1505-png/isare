@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iSARE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+/* ===== DARK MODE (défaut) ===== */
+:root {
+  --bg: #070A07;
+  --s1: #0C110C;
+  --s2: #111711;
+  --s3: #182018;
+  --border: rgba(255,255,255,0.07);
+  --border-h: rgba(255,255,255,0.14);
+  --accent: #4A9E6B;
+  --accent-dim: rgba(74,158,107,0.12);
+  --t1: #EFF5EF;
+  --t2: #8AA88A;
+  --t3: #526052;
+  --warning: #E8A838;
+  --danger: #E05555;
+  --r: 12px; --rs: 8px;
+}
+/* ===== LIGHT MODE ===== */
+body.light {
+  --bg: #F2F6F2;
+  --s1: #FFFFFF;
+  --s2: #F7FAF7;
+  --s3: #EAF0EA;
+  --border: rgba(0,0,0,0.08);
+  --border-h: rgba(0,0,0,0.15);
+  --accent: #2D7A4F;
+  --accent-dim: rgba(45,122,79,0.1);
+  --t1: #142014;
+  --t2: #4A6B4A;
+  --t3: #8AAA8A;
+  --warning: #C07A10;
+  --danger: #C03030;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg); color: var(--t1);
+  display: flex; height: 100vh; overflow: hidden;
+  font-size: 14px; line-height: 1.5;
+  transition: background 0.2s, color 0.2s;
+}
+/* SIDEBAR */
+.sidebar {
+  width: 256px; background: var(--s1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+}
+.logo {
+  padding: 22px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #4A9E6B 0%, #2D6B47 100%);
+  border-radius: 9px; display: flex; align-items: center;
+  justify-content: center; font-size: 17px; flex-shrink: 0;
+}
+.logo-name { font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 800; letter-spacing: -0.4px; }
+.logo-tag { font-size: 9.5px; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; font-weight: 500; }
+.sb-section { padding: 18px 10px 6px; }
+.sb-label { font-size: 10px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--t3); padding: 0 8px; margin-bottom: 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 10px; border-radius: var(--rs);
+  cursor: pointer; color: var(--t2); font-size: 13.5px;
+  transition: all 0.15s; border: none; background: none;
+  width: 100%; text-align: left; font-family: 'DM Sans', sans-serif;
+}
+.nav-item:hover { background: var(--s3); color: var(--t1); }
+.nav-item.active { background: var(--accent-dim); color: var(--accent); font-weight: 500; }
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 6px;
+  cursor: pointer; font-size: 12.5px; transition: all 0.15s; margin-bottom: 2px;
+}
+.chip:hover { background: var(--s3); }
+.chip.active { background: var(--s3); }
+.sdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.chip-count { margin-left: auto; font-size: 11px; background: var(--s3); padding: 1px 7px; border-radius: 20px; color: var(--t3); }
+.sb-stats { margin-top: auto; padding: 16px; border-top: 1px solid var(--border); }
+.sb-stat { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; }
+.sb-stat-label { font-size: 12px; color: var(--t2); }
+.sb-stat-val { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; color: var(--t1); }
+/* MAIN */
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 22px; border-bottom: 1px solid var(--border);
+  background: var(--s1);
+}
+.topbar-title { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.3px; white-space: nowrap; }
+.search-box { flex:1; max-width: 320px; position: relative; }
+.search-box input {
+  width: 100%; background: var(--s2); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 8px 12px 8px 34px;
+  color: var(--t1); font-size: 13px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.15s;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box input::placeholder { color: var(--t3); }
+.si { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--t3); pointer-events: none; }
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: var(--rs);
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  font-weight: 500; cursor: pointer; border: none;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn-p { background: var(--accent); color: #fff; }
+.btn-p:hover { opacity: 0.88; }
+.btn-g { background: transparent; color: var(--t2); border: 1px solid var(--border); }
+.btn-g:hover { background: var(--s3); color: var(--t1); border-color: var(--border-h); }
+/* Theme toggle */
+.theme-btn {
+  width: 36px; height: 36px; border-radius: var(--rs);
+  background: var(--s2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--t2); transition: all 0.15s; flex-shrink: 0;
+}
+.theme-btn:hover { background: var(--s3); color: var(--t1); }
+.vtoggle { display: flex; background: var(--s2); border: 1px solid var(--border); border-radius: var(--rs); padding: 3px; }
+.vbtn {
+  padding: 5px 10px; border-radius: 5px; cursor: pointer; color: var(--t3);
+  border: none; background: none; font-size: 12px; transition: all 0.15s;
+  display: flex; align-items: center; gap: 5px; font-family: 'DM Sans', sans-serif;
+}
+.vbtn.active { background: var(--s3); color: var(--t1); }
+.content { flex:1; overflow:auto; padding: 22px; }
+/* KPI */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+.kpi { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 20px; position: relative; overflow: hidden; }
+.kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi.ct::before { background: var(--accent); }
+.kpi.cg::before { background: var(--t3); }
+.kpi.cw::before { background: var(--warning); }
+.kpi.cs::before { background: #4A9E6B; }
+.kpi-label { font-size: 11px; color: var(--t2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-val { font-family: 'Outfit', sans-serif; font-size: 34px; font-weight: 800; line-height: 1; }
+.kpi-sub { font-size: 11.5px; color: var(--t3); margin-top: 5px; }
+.kpi-ico { position: absolute; right: 18px; top: 18px; color: var(--t3); opacity: 0.2; }
+/* TABLE */
+.tbl-wrap { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.tbl-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid var(--border); }
+.tbl-title { font-size: 12.5px; font-weight: 500; color: var(--t2); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  padding: 11px 14px; text-align: left; font-size: 10.5px; font-weight: 600;
+  letter-spacing: 0.8px; text-transform: uppercase; color: var(--t3);
+  border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none;
+}
+th:hover { color: var(--t2); }
+td {
+  padding: 13px 14px; font-size: 13.5px; color: var(--t1);
+  border-bottom: 1px solid var(--border);
+  max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--s3); }
+.co-cell { display: flex; align-items: center; gap: 9px; }
+.avatar {
+  border-radius: 7px; background: var(--accent-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Outfit', sans-serif; color: var(--accent); font-weight: 700; flex-shrink: 0;
+  overflow: hidden;
+}
+.avatar img { width: 100%; height: 100%; object-fit: contain; padding: 2px; border-radius: 6px; }
+/* Logo upload zone */
+.logo-upload-zone {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+  padding: 14px; background: var(--s3); border-radius: var(--rs);
+  border: 1px dashed var(--border-h);
+}
+.logo-preview {
+  width: 52px; height: 52px; border-radius: var(--rs);
+  background: var(--s2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden; color: var(--t3); font-size: 11px; text-align: center;
+}
+.logo-preview img { width: 100%; height: 100%; object-fit: contain; padding: 3px; }
+.logo-upload-info { flex: 1; }
+.logo-upload-info p { font-size: 12.5px; color: var(--t2); margin-bottom: 6px; }
+.logo-upload-info span { font-size: 11px; color: var(--t3); }
+.logo-file-input { display: none; }
+.logo-btns { display: flex; gap: 7px; margin-top: 8px; }
+.co-name { font-weight: 500; }
+.co-sec { font-size: 11.5px; color: var(--t3); }
+.sbadge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 500; white-space: nowrap; }
+.pbadge { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; }
+.lico { color: var(--t3); transition: color 0.15s; text-decoration: none; display: inline-flex; }
+.lico:hover { color: var(--accent); }
+.abtn { padding: 4px 8px; border-radius: 5px; cursor: pointer; border: none; background: transparent; color: var(--t3); transition: all 0.15s; font-size: 12px; }
+.abtn:hover { background: var(--s3); color: var(--t1); }
+.abtn.del:hover { background: rgba(224,85,85,0.12); color: var(--danger); }
+/* KANBAN */
+.kanban { display: flex; gap: 14px; align-items: flex-start; min-width: max-content; }
+.kb-col { width: 272px; flex-shrink: 0; }
+.kb-col-hd { display: flex; align-items: center; gap: 8px; padding: 11px 13px; background: var(--s2); border: 1px solid var(--border); border-radius: var(--r) var(--r) 0 0; border-bottom: none; }
+.kb-col-title { font-size: 13px; font-weight: 600; }
+.kb-count { margin-left: auto; background: var(--s3); padding: 2px 8px; border-radius: 20px; font-size: 11px; color: var(--t3); }
+.kb-cards { background: var(--s1); border: 1px solid var(--border); border-radius: 0 0 var(--r) var(--r); padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 180px; }
+.kb-card { background: var(--s2); border: 1px solid var(--border); border-radius: var(--rs); padding: 13px; cursor: pointer; transition: all 0.15s; }
+.kb-card:hover { border-color: var(--border-h); transform: translateY(-1px); }
+.kb-co { font-weight: 500; font-size: 13.5px; margin-bottom: 3px; }
+.kb-dir { font-size: 12px; color: var(--t2); margin-bottom: 10px; }
+.kb-meta { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--t3); }
+/* CARDS GRID */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 14px; }
+.card { background: var(--s2); border: 1px solid var(--border); border-radius: var(--r); padding: 18px; cursor: pointer; transition: all 0.15s; }
+.card:hover { border-color: var(--border-h); }
+/* MODAL */
+.overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px); z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--s2); border: 1px solid var(--border-h);
+  border-radius: 16px; width: 100%; max-width: 700px;
+  max-height: 88vh; overflow-y: auto;
+  transform: translateY(12px); transition: transform 0.2s;
+}
+.overlay.open .modal { transform: translateY(0); }
+.modal-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 26px 18px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--s2); z-index: 1;
+}
+.modal-title { font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; }
+/* Modal tabs */
+.modal-tabs { display: flex; gap: 4px; padding: 14px 26px 0; border-bottom: 1px solid var(--border); }
+.mtab {
+  padding: 8px 16px; font-size: 13px; font-weight: 500;
+  border: none; background: none; cursor: pointer; color: var(--t3);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  font-family: 'DM Sans', sans-serif; transition: all 0.15s;
+}
+.mtab:hover { color: var(--t1); }
+.mtab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.modal-body { padding: 22px 26px; }
+.modal-ft { padding: 14px 26px 22px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+/* FORM */
+.fsec { margin-bottom: 26px; }
+.fsec-title {
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.1px; color: var(--accent); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.fsec-title::after { content:''; flex:1; height:1px; background: var(--border); }
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg.s2 { grid-column: span 2; }
+.flabel { font-size: 11.5px; font-weight: 500; color: var(--t2); }
+.finput {
+  background: var(--s3); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 9px 11px;
+  color: var(--t1); font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color 0.15s; width: 100%;
+}
+.finput:focus { border-color: var(--accent); }
+.finput::placeholder { color: var(--t3); }
+select.finput { cursor: pointer; }
+textarea.finput { resize: vertical; min-height: 76px; }
+.dir-card { background: var(--s3); border: 1px solid var(--border); border-radius: var(--rs); padding: 13px; margin-bottom: 10px; }
+.dir-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+.dir-num { font-size: 10.5px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: 0.5px; }
+.add-dir-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 14px; border: 1px dashed var(--border-h); border-radius: var(--rs);
+  cursor: pointer; background: none; color: var(--t3); font-size: 13px;
+  font-family: 'DM Sans', sans-serif; transition: all 0.15s; width: 100%;
+}
+.add-dir-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+/* HISTORIQUE */
+.histo-add {
+  background: var(--s3); border: 1px solid var(--border);
+  border-radius: var(--rs); padding: 14px; margin-bottom: 18px;
+}
+.histo-add-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.histo-timeline { display: flex; flex-direction: column; gap: 0; }
+.histo-item { display: flex; gap: 12px; position: relative; padding-bottom: 18px; }
+.histo-item:last-child { padding-bottom: 0; }
+.histo-line { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.histo-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 5px; }
+.histo-bar { width: 1px; flex: 1; background: var(--border); margin-top: 4px; }
+.histo-item:last-child .histo-bar { display: none; }
+.histo-content { flex: 1; }
+.histo-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.histo-date { font-size: 11.5px; color: var(--t3); }
+.histo-type { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.histo-note { font-size: 13px; color: var(--t2); line-height: 1.5; }
+.histo-del { margin-left: auto; background: none; border: none; color: var(--t3); cursor: pointer; font-size: 11px; padding: 2px 5px; border-radius: 4px; }
+.histo-del:hover { color: var(--danger); background: rgba(224,85,85,0.08); }
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; color: var(--t3); text-align: center; }
+.empty-ico { font-size: 44px; margin-bottom: 14px; opacity: 0.5; }
+.empty-ttl { font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 600; color: var(--t2); margin-bottom: 7px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-name">i<span style="letter-spacing:1px">SARE</span></div>
+      <div class="logo-tag">Prospection CRM</div>
+    </div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Navigation</div>
+    <button class="nav-item active" onclick="setView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Tableau de bord
+    </button>
+    <button class="nav-item" onclick="setView('prospects')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Prospects
+    </button>
+    <button class="nav-item" onclick="setView('pipeline')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="4" height="14" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="18" y="9" width="4" height="12" rx="1"/></svg>
+      Pipeline Kanban
+    </button>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Statut</div>
+    <div id="status-filters"></div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-label">Priorité</div>
+    <div id="priority-filters"></div>
+  </div>
+  <div class="sb-stats" id="sb-stats"></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Tableau de bord</div>
+    <div class="search-box">
+      <span class="si"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+      <input type="text" id="search" placeholder="Rechercher…" oninput="render()">
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+      <div class="vtoggle">
+        <button class="vbtn active" id="vt" onclick="setTV('table')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Liste
+        </button>
+        <button class="vbtn" id="vg" onclick="setTV('grid')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Cartes
+        </button>
+      </div>
+      <!-- THEME TOGGLE -->
+      <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Changer le thème">
+        <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="btn btn-g" onclick="exportCSV()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+      <button class="btn btn-p" onclick="openModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouveau prospect
+      </button>
+    </div>
+  </div>
+  <div class="content" id="main-content"></div>
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeOvl(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="modal-title">Nouveau prospect</div>
+      <button class="abtn" onclick="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-tabs">
+      <button class="mtab active" id="tab-fiche" onclick="switchTab('fiche')">Fiche</button>
+      <button class="mtab" id="tab-histo" onclick="switchTab('histo')">Historique <span id="histo-count" style="font-size:11px;background:var(--accent-dim);color:var(--accent);padding:1px 6px;border-radius:10px;margin-left:4px"></span></button>
+    </div>
+    <div class="modal-body">
+      <!-- TAB FICHE -->
+      <div class="tab-panel active" id="panel-fiche">
+        <div class="fsec">
+          <div class="fsec-title">Entreprise</div>
+          <!-- Logo upload -->
+          <div class="logo-upload-zone">
+            <div class="logo-preview" id="logo-preview">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="logo-upload-info">
+              <p>Logo de l'entreprise</p>
+              <span>PNG, JPG ou SVG · recommandé 200×200px</span>
+              <div class="logo-btns">
+                <button class="btn btn-g" style="padding:5px 10px;font-size:12px" onclick="document.getElementById('logo-file').click()">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Importer
+                </button>
+                <button class="btn btn-g" style="padding:5px 10px;font-size:12px;color:var(--danger)" onclick="clearLogo()" id="logo-clear-btn" style="display:none">✕ Retirer</button>
+              </div>
+            </div>
+            <input type="file" id="logo-file" class="logo-file-input" accept="image/*" onchange="handleLogo(event)">
+          </div>
+          <div class="fgrid">
+            <div class="fg"><label class="flabel">Nom de l'entreprise *</label><input class="finput" id="f-nom" placeholder="ex: Acme Corp" type="text"></div>
+            <div class="fg"><label class="flabel">Secteur d'activité</label><input class="finput" id="f-secteur" placeholder="ex: Tech, Industrie…" type="text"></div>
+            <div class="fg"><label class="flabel">Taille (effectifs)</label>
+              <select class="finput" id="f-taille">
+                <option value="">— Sélectionner —</option>
+                <option>1–10</option><option>11–50</option><option>51–200</option>
+                <option>201–500</option><option>501–1000</option><option>+1000</option>
+              </select>
+            </div>
+            <div class="fg"><label class="flabel">CA n-1 (€)</label><input class="finput" id="f-ca" placeholder="ex: 2500000" type="number"></div>
+            <div class="fg"><label class="flabel">Site internet</label><input class="finput" id="f-site" placeholder="https://…" type="url"></div>
+            <div class="fg"><label class="flabel">LinkedIn entreprise</label><input class="finput" id="f-lico" placeholder="https://linkedin.com/company/…" type="url"></div>
+          </div>
+        </div>
+        <div class="fsec">
+          <div class="fsec-title">Dirigeants</div>
+          <div id="dir-container"></div>
+          <button class="add-dir-btn" onclick="addDir()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un dirigeant
+          </button>
+        </div>
+        <div class="fsec">
+          <div class="fsec-title">Suivi commercial</div>
+          <div class="fgrid">
+            <div class="fg"><label class="flabel">Statut</label>
+              <select class="finput" id="f-statut">
+                <option>À contacter</option><option>Contacté</option>
+                <option>En discussion</option><option>Signé</option><option>Perdu</option>
+              </select>
+            </div>
+            <div class="fg"><label class="flabel">Priorité</label>
+              <select class="finput" id="f-priorite"><option>Haute</option><option>Moyenne</option><option>Faible</option></select>
+            </div>
+            <div class="fg"><label class="flabel">Source</label>
+              <select class="finput" id="f-source">
+                <option value="">— Sélectionner —</option>
+                <option>LinkedIn</option><option>Recommandation</option>
+                <option>Salon / Événement</option><option>Cold email</option>
+                <option>Cold call</option><option>Site internet</option><option>Autre</option>
+              </select>
+            </div>
+            <div class="fg"><label class="flabel">Date de contact</label><input class="finput" id="f-date" type="date"></div>
+            <div class="fg"><label class="flabel">Prochain suivi</label><input class="finput" id="f-suivi" type="date"></div>
+            <div class="fg s2"><label class="flabel">Commentaires</label><textarea class="finput" id="f-notes" placeholder="Notes, contexte, informations utiles…"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB HISTORIQUE -->
+      <div class="tab-panel" id="panel-histo">
+        <div class="histo-add">
+          <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Nouvelle interaction</div>
+          <div class="histo-add-row">
+            <div class="fg"><label class="flabel">Date</label><input class="finput" id="h-date" type="date"></div>
+            <div class="fg"><label class="flabel">Type</label>
+              <select class="finput" id="h-type">
+                <option>📞 Appel</option><option>📧 Email</option><option>🤝 RDV</option>
+                <option>💬 LinkedIn</option><option>📝 Autre</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg" style="margin-bottom:10px"><label class="flabel">Note</label><textarea class="finput" id="h-note" placeholder="Résumé de l'échange, prochaines étapes…" style="min-height:60px"></textarea></div>
+          <button class="btn btn-p" style="width:100%;justify-content:center" onclick="addInteraction()">Ajouter l'interaction</button>
+        </div>
+        <div class="histo-timeline" id="histo-list"></div>
+        <div id="histo-empty" style="display:none">
+          <div class="empty" style="padding:30px">
+            <div style="font-size:32px;margin-bottom:10px">📋</div>
+            <div style="font-size:13.5px;font-weight:500;color:var(--t2)">Aucune interaction enregistrée</div>
+            <div style="font-size:12px;color:var(--t3);margin-top:4px">Ajoutez votre premier contact ci-dessus</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-g" onclick="closeModal()">Fermer</button>
+      <button class="btn btn-p" onclick="save()">Enregistrer la fiche</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SC = { 'À contacter':'#9B5DE5','Contacté':'#4361EE','En discussion':'#E8A838','Signé':'#4A9E6B','Perdu':'#E05555' };
+const PC = { 'Haute':'#E05555','Moyenne':'#E8A838','Faible':'#4A9E6B' };
+const STATUSES = Object.keys(SC);
+const TYPE_COLORS = { '📞 Appel':'#4361EE','📧 Email':'#9B5DE5','🤝 RDV':'#4A9E6B','💬 LinkedIn':'#0077B5','📝 Autre':'#888' };
+
+let prospects = JSON.parse(localStorage.getItem('isare_prospects') || '[]');
+let curView = 'dashboard', tableView = 'table', editId = null;
+let fStatus = null, fPrio = null, sortCol = null, sortDir = 1;
+let dirCount = 0, curTab = 'fiche';
+let tempInteractions = [];
+let tempLogo = null;
+
+// Theme
+let isDark = localStorage.getItem('isare_theme') !== 'light';
+function applyTheme() {
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('icon-moon').style.display = isDark ? 'block' : 'none';
+  document.getElementById('icon-sun').style.display = isDark ? 'none' : 'block';
+  localStorage.setItem('isare_theme', isDark ? 'dark' : 'light');
+}
+function toggleTheme() { isDark = !isDark; applyTheme(); }
+applyTheme();
+
+function persist() { localStorage.setItem('isare_prospects', JSON.stringify(prospects)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function setView(v) {
+  curView = v;
+  document.querySelectorAll('.nav-item').forEach((el,i) => el.classList.toggle('active', ['dashboard','prospects','pipeline'][i]===v));
+  document.getElementById('page-title').textContent = {dashboard:'Tableau de bord',prospects:'Mes prospects',pipeline:'Pipeline Kanban'}[v];
+  render();
+}
+function setTV(v) {
+  tableView = v;
+  document.getElementById('vt').classList.toggle('active', v==='table');
+  document.getElementById('vg').classList.toggle('active', v==='grid');
+  render();
+}
+function switchTab(t) {
+  curTab = t;
+  ['fiche','histo'].forEach(x => {
+    document.getElementById('tab-'+x).classList.toggle('active', x===t);
+    document.getElementById('panel-'+x).classList.toggle('active', x===t);
+  });
+  if (t==='histo') renderHistoList();
+}
+
+function filtered() {
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  return prospects.filter(p => {
+    const txt = [p.nom,p.secteur,...(p.dirs||[]).map(d=>d.nom)].join(' ').toLowerCase();
+    return (!q||txt.includes(q)) && (!fStatus||p.statut===fStatus) && (!fPrio||p.priorite===fPrio);
+  });
+}
+
+function renderSidebar() {
+  document.getElementById('status-filters').innerHTML = STATUSES.map(s => {
+    const n = prospects.filter(p=>p.statut===s).length;
+    return `<div class="chip ${fStatus===s?'active':''}" onclick="toggleS('${s}')">
+      <div class="sdot" style="background:${SC[s]}"></div>
+      <span style="color:var(--t2);font-size:12.5px">${s}</span>
+      <span class="chip-count">${n}</span></div>`;
+  }).join('');
+  document.getElementById('priority-filters').innerHTML = ['Haute','Moyenne','Faible'].map(p => {
+    const n = prospects.filter(x=>x.priorite===p).length;
+    return `<div class="chip ${fPrio===p?'active':''}" onclick="toggleP('${p}')">
+      <div class="sdot" style="background:${PC[p]}"></div>
+      <span style="color:var(--t2);font-size:12.5px">${p}</span>
+      <span class="chip-count">${n}</span></div>`;
+  }).join('');
+  const signed = prospects.filter(p=>p.statut==='Signé').length;
+  const rate = prospects.length>0 ? Math.round(signed/prospects.length*100) : 0;
+  document.getElementById('sb-stats').innerHTML = `
+    <div class="sb-stat"><span class="sb-stat-label">Total</span><span class="sb-stat-val">${prospects.length}</span></div>
+    <div class="sb-stat"><span class="sb-stat-label">Conversion</span><span class="sb-stat-val" style="color:var(--accent)">${rate}%</span></div>`;
+}
+function toggleS(s) { fStatus = fStatus===s ? null : s; render(); }
+function toggleP(p) { fPrio = fPrio===p ? null : p; render(); }
+
+function render() {
+  renderSidebar();
+  const el = document.getElementById('main-content');
+  if (curView==='dashboard') el.innerHTML = renderDash();
+  else if (curView==='prospects') el.innerHTML = tableView==='table' ? renderTable() : renderGrid();
+  else el.innerHTML = renderKanban();
+}
+
+/* DASHBOARD */
+function renderDash() {
+  const t=prospects.length, ac=prospects.filter(p=>p.statut==='À contacter').length;
+  const ed=prospects.filter(p=>p.statut==='En discussion').length, sg=prospects.filter(p=>p.statut==='Signé').length;
+  const upcoming=[...prospects].filter(p=>p.suivi).sort((a,b)=>new Date(a.suivi)-new Date(b.suivi)).slice(0,5);
+  const recent=[...prospects].sort((a,b)=>b.ts-a.ts).slice(0,5);
+  return `
+  <div class="kpi-grid">
+    <div class="kpi ct"><div class="kpi-label">Total prospects</div><div class="kpi-val">${t}</div><div class="kpi-sub">dans votre pipeline</div></div>
+    <div class="kpi cg"><div class="kpi-label">À contacter</div><div class="kpi-val">${ac}</div><div class="kpi-sub">en attente</div></div>
+    <div class="kpi cw"><div class="kpi-label">En discussion</div><div class="kpi-val">${ed}</div><div class="kpi-sub">négociations actives</div></div>
+    <div class="kpi cs"><div class="kpi-label">Signés</div><div class="kpi-val">${sg}</div><div class="kpi-sub">contrats conclus</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">🔔 Prochains suivis</div></div>
+      ${upcoming.length===0?`<div class="empty" style="padding:30px"><div style="font-size:13px;color:var(--t3)">Aucun suivi planifié</div></div>`
+      :`<table><thead><tr><th>Entreprise</th><th>Statut</th><th>Date</th></tr></thead><tbody>
+        ${upcoming.map(p=>`<tr>
+          <td><div class="co-cell">${avatarHtml(p,28,10)}<span class="co-name">${esc(p.nom)}</span></div></td>
+          <td>${sbadge(p.statut)}</td><td style="color:var(--warning)">${fmtD(p.suivi)}</td>
+        </tr>`).join('')}</tbody></table>`}
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-head"><div class="tbl-title">🆕 Derniers ajouts</div></div>
+      ${recent.length===0?`<div class="empty" style="padding:30px"><div style="font-size:13px;color:var(--t3)">Aucun prospect</div></div>`
+      :`<table><thead><tr><th>Entreprise</th><th>Priorité</th><th>Interactions</th></tr></thead><tbody>
+        ${recent.map(p=>`<tr>
+          <td><div class="co-cell">${avatarHtml(p,28,10)}<span class="co-name">${esc(p.nom)}</span></div></td>
+          <td>${pbadge(p.priorite)}</td>
+          <td style="color:var(--t2);font-size:12.5px">${(p.interactions||[]).length} échange(s)</td>
+        </tr>`).join('')}</tbody></table>`}
+    </div>
+  </div>`;
+}
+
+/* TABLE */
+function renderTable() {
+  const f = filtered();
+  return `<div class="tbl-wrap">
+    <div class="tbl-head"><div class="tbl-title">${f.length} prospect${f.length!==1?'s':''}</div></div>
+    ${f.length===0?`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-ttl">Aucun résultat</div></div>`:`
+    <div style="overflow-x:auto"><table>
+      <thead><tr>
+        <th onclick="srt('nom')">Entreprise</th><th onclick="srt('taille')">Taille</th>
+        <th onclick="srt('ca')">CA n-1</th><th>Dirigeant(s)</th>
+        <th onclick="srt('statut')">Statut</th><th onclick="srt('priorite')">Priorité</th>
+        <th onclick="srt('suivi')">Prochain suivi</th><th>Interactions</th><th>Liens</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${f.map(p=>{
+        const d0=p.dirs&&p.dirs.length?p.dirs[0]:null;
+        const icount=(p.interactions||[]).length;
+        return `<tr>
+          <td style="max-width:170px"><div class="co-cell">
+            ${avatarHtml(p,30,11)}
+            <div><div class="co-name">${esc(p.nom)}</div>${p.secteur?`<div class="co-sec">${esc(p.secteur)}</div>`:''}</div>
+          </div></td>
+          <td style="color:var(--t2)">${p.taille||'—'}</td>
+          <td style="font-family:'Outfit',sans-serif;font-size:13px">${p.ca?fmtCA(p.ca):'—'}</td>
+          <td>${d0?`<div style="font-size:13px;font-weight:500">${esc(d0.nom)}</div>${p.dirs.length>1?`<div style="font-size:11px;color:var(--t3)">+${p.dirs.length-1} autre(s)</div>`:''}`: '—'}</td>
+          <td>${sbadge(p.statut)}</td><td>${pbadge(p.priorite)}</td>
+          <td style="color:${p.suivi?'var(--warning)':'var(--t3)'}">${p.suivi?fmtD(p.suivi):'—'}</td>
+          <td><span style="font-size:12px;color:var(--t2)">${icount>0?`<span style="color:var(--accent);font-weight:600">${icount}</span> échange(s)`:' —'}</span></td>
+          <td><div style="display:flex;gap:5px">
+            ${p.site?`<a href="${esc(p.site)}" target="_blank" class="lico" title="Site web"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>`:''}
+            ${p.lico?`<a href="${esc(p.lico)}" target="_blank" class="lico" title="LinkedIn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>`:''}
+          </div></td>
+          <td><div style="display:flex;gap:3px">
+            <button class="abtn" onclick="openModal('${p.id}')" title="Modifier">✏️</button>
+            <button class="abtn del" onclick="delP('${p.id}')" title="Supprimer">🗑️</button>
+          </div></td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`}
+  </div>`;
+}
+
+/* GRID */
+function renderGrid() {
+  const f = filtered();
+  if (!f.length) return `<div class="empty"><div class="empty-ico">🔍</div><div class="empty-ttl">Aucun résultat</div></div>`;
+  return `<div class="cards-grid">${f.map(p=>{
+    const d0=p.dirs&&p.dirs.length?p.dirs[0]:null;
+    const c=SC[p.statut]||'#888';
+    const icount=(p.interactions||[]).length;
+    return `<div class="card" style="border-top:2px solid ${c}" onclick="openModal('${p.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
+        <div class="co-cell">
+          ${avatarHtml(p,36,12)}
+          <div><div style="font-weight:600;font-size:14px">${esc(p.nom)}</div>${p.secteur?`<div style="font-size:11.5px;color:var(--t3)">${esc(p.secteur)}</div>`:''}</div>
+        </div>
+        ${sbadge(p.statut)}
+      </div>
+      ${d0?`<div style="background:var(--s3);border-radius:6px;padding:10px;margin-bottom:12px">
+        <div style="font-size:11.5px;color:var(--t3);margin-bottom:3px">Dirigeant principal</div>
+        <div style="font-size:13px;font-weight:500">${esc(d0.nom)}</div>
+        ${d0.email?`<div style="font-size:12px;color:var(--accent)">${esc(d0.email)}</div>`:d0.tel?`<div style="font-size:12px;color:var(--t2)">${esc(d0.tel)}</div>`:''}
+      </div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3)">
+        ${pbadge(p.priorite)}
+        ${icount>0?`<span style="color:var(--accent);font-weight:600;font-size:12px">${icount} échange(s)</span>`:''}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/* KANBAN */
+function renderKanban() {
+  const f = filtered();
+  return `<div class="kanban">${STATUSES.map(st=>{
+    const cards=f.filter(p=>p.statut===st), c=SC[st];
+    return `<div class="kb-col">
+      <div class="kb-col-hd"><div class="sdot" style="background:${c}"></div><span class="kb-col-title">${st}</span><span class="kb-count">${cards.length}</span></div>
+      <div class="kb-cards">
+        ${!cards.length?`<div style="text-align:center;color:var(--t3);font-size:12px;padding:20px">Aucun prospect</div>`:''}
+        ${cards.map(p=>{
+          const d0=p.dirs&&p.dirs.length?p.dirs[0]:null;
+          const icount=(p.interactions||[]).length;
+          return `<div class="kb-card" onclick="openModal('${p.id}')">
+            <div class="kb-co">${esc(p.nom)}</div>
+            ${d0?`<div class="kb-dir">${esc(d0.nom)}</div>`:'<div class="kb-dir" style="color:var(--t3)">—</div>'}
+            <div class="kb-meta">
+              ${pbadge(p.priorite)}
+              ${icount>0?`<span style="color:var(--accent);font-size:11px;margin-left:auto">💬 ${icount}</span>`:''}
+              ${p.suivi?`<span style="color:var(--warning);font-size:11px${icount>0?'':';margin-left:auto'}">📅 ${fmtD(p.suivi)}</span>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/* MODAL */
+function openModal(id=null) {
+  editId=id; dirCount=0; curTab='fiche';
+  switchTab('fiche');
+  document.getElementById('modal-title').textContent = id?'Modifier le prospect':'Nouveau prospect';
+  ['f-nom','f-secteur','f-site','f-lico','f-notes'].forEach(x=>document.getElementById(x).value='');
+  ['f-taille','f-source'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('f-statut').value='À contacter';
+  document.getElementById('f-priorite').value='Haute';
+  document.getElementById('f-ca').value='';
+  document.getElementById('f-date').value='';
+  document.getElementById('f-suivi').value='';
+  document.getElementById('dir-container').innerHTML='';
+  // Set today's date for new interactions
+  document.getElementById('h-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('h-note').value='';
+  tempLogo = null;
+  if (id) {
+    const p=prospects.find(x=>x.id===id);
+    if (p) {
+      document.getElementById('f-nom').value=p.nom||'';
+      document.getElementById('f-secteur').value=p.secteur||'';
+      document.getElementById('f-taille').value=p.taille||'';
+      document.getElementById('f-ca').value=p.ca||'';
+      document.getElementById('f-site').value=p.site||'';
+      document.getElementById('f-lico').value=p.lico||'';
+      document.getElementById('f-statut').value=p.statut||'À contacter';
+      document.getElementById('f-priorite').value=p.priorite||'Haute';
+      document.getElementById('f-source').value=p.source||'';
+      document.getElementById('f-date').value=p.date||'';
+      document.getElementById('f-suivi').value=p.suivi||'';
+      document.getElementById('f-notes').value=p.notes||'';
+      (p.dirs||[]).forEach(d=>addDir(d));
+      tempInteractions = JSON.parse(JSON.stringify(p.interactions||[]));
+      tempLogo = p.logo || null;
+    }
+  } else { addDir(); tempInteractions=[]; }
+  setLogoPreview(tempLogo);
+  updateHistoCount();
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); editId=null; }
+function closeOvl(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function addDir(data={}) {
+  dirCount++;
+  const n=dirCount, c=document.getElementById('dir-container');
+  const d=document.createElement('div'); d.className='dir-card'; d.id=`dc-${n}`;
+  d.innerHTML=`
+    <div class="dir-hd">
+      <span class="dir-num">Dirigeant #${n}</span>
+      ${n>1?`<button class="abtn del" onclick="document.getElementById('dc-${n}').remove()">✕ Retirer</button>`:''}
+    </div>
+    <div class="fgrid">
+      <div class="fg"><label class="flabel">Nom complet</label><input class="finput dn" placeholder="Prénom Nom" value="${esc(data.nom||'')}"></div>
+      <div class="fg"><label class="flabel">Téléphone</label><input class="finput dt" placeholder="+33 6 00 00 00 00" value="${esc(data.tel||'')}"></div>
+      <div class="fg"><label class="flabel">Email</label><input class="finput de" type="email" placeholder="prenom@entreprise.fr" value="${esc(data.email||'')}"></div>
+      <div class="fg"><label class="flabel">LinkedIn</label><input class="finput dl" type="url" placeholder="https://linkedin.com/in/…" value="${esc(data.linkedin||'')}"></div>
+    </div>`;
+  c.appendChild(d);
+}
+
+function getDirs() {
+  return Array.from(document.querySelectorAll('.dir-card')).map(c=>({
+    nom:c.querySelector('.dn').value.trim(), tel:c.querySelector('.dt').value.trim(),
+    email:c.querySelector('.de').value.trim(), linkedin:c.querySelector('.dl').value.trim(),
+  })).filter(d=>d.nom||d.email||d.tel);
+}
+
+/* LOGO */
+function handleLogo(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = ev => { tempLogo = ev.target.result; setLogoPreview(tempLogo); };
+  r.readAsDataURL(file);
+  e.target.value = '';
+}
+function setLogoPreview(src) {
+  const el = document.getElementById('logo-preview');
+  const btn = document.getElementById('logo-clear-btn');
+  if (src) {
+    el.innerHTML = `<img src="${src}" alt="logo">`;
+    btn.style.display = 'inline-flex';
+  } else {
+    el.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    btn.style.display = 'none';
+  }
+}
+function clearLogo() { tempLogo = null; setLogoPreview(null); }
+
+/* INTERACTIONS */
+function addInteraction() {
+  const date=document.getElementById('h-date').value;
+  const type=document.getElementById('h-type').value;
+  const note=document.getElementById('h-note').value.trim();
+  if (!note) { alert('Ajoutez une note pour cette interaction.'); return; }
+  tempInteractions.unshift({ id:uid(), date, type, note, ts:Date.now() });
+  document.getElementById('h-note').value='';
+  updateHistoCount();
+  renderHistoList();
+}
+function deleteInteraction(iid) {
+  tempInteractions = tempInteractions.filter(x=>x.id!==iid);
+  updateHistoCount();
+  renderHistoList();
+}
+function updateHistoCount() {
+  const n=tempInteractions.length;
+  document.getElementById('histo-count').textContent = n>0?n:'';
+}
+function renderHistoList() {
+  const el=document.getElementById('histo-list');
+  const emEl=document.getElementById('histo-empty');
+  if (!tempInteractions.length) { el.innerHTML=''; emEl.style.display='block'; return; }
+  emEl.style.display='none';
+  el.innerHTML=tempInteractions.map(it=>{
+    const c=TYPE_COLORS[it.type]||'#888';
+    return `<div class="histo-item">
+      <div class="histo-line">
+        <div class="histo-dot" style="background:${c}"></div>
+        <div class="histo-bar"></div>
+      </div>
+      <div class="histo-content">
+        <div class="histo-meta">
+          <span class="histo-type" style="background:${c}20;color:${c}">${esc(it.type)}</span>
+          <span class="histo-date">${it.date?fmtD(it.date):'—'}</span>
+          <button class="histo-del" onclick="deleteInteraction('${it.id}')">✕</button>
+        </div>
+        <div class="histo-note">${esc(it.note)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function save() {
+  const nom=document.getElementById('f-nom').value.trim();
+  if (!nom) { alert("Le nom de l'entreprise est requis."); return; }
+  const data = {
+    id:editId||uid(), nom,
+    secteur:document.getElementById('f-secteur').value.trim(),
+    taille:document.getElementById('f-taille').value,
+    ca:document.getElementById('f-ca').value?parseFloat(document.getElementById('f-ca').value):null,
+    site:document.getElementById('f-site').value.trim(),
+    lico:document.getElementById('f-lico').value.trim(),
+    dirs:getDirs(),
+    statut:document.getElementById('f-statut').value,
+    priorite:document.getElementById('f-priorite').value,
+    source:document.getElementById('f-source').value,
+    date:document.getElementById('f-date').value,
+    suivi:document.getElementById('f-suivi').value,
+    notes:document.getElementById('f-notes').value.trim(),
+    interactions:tempInteractions,
+    logo: tempLogo,
+    ts:editId?(prospects.find(p=>p.id===editId)?.ts||Date.now()):Date.now(),
+  };
+  if (editId) { const i=prospects.findIndex(p=>p.id===editId); if(i>=0) prospects[i]=data; }
+  else prospects.push(data);
+  persist(); closeModal(); render();
+}
+
+function delP(id) {
+  if (!confirm('Supprimer ce prospect ?')) return;
+  prospects=prospects.filter(p=>p.id!==id); persist(); render();
+}
+function srt(col) {
+  if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
+  prospects.sort((a,b)=>{
+    let va=a[col]||'', vb=b[col]||'';
+    if (typeof va==='number') return (va-vb)*sortDir;
+    return va.toString().localeCompare(vb.toString())*sortDir;
+  });
+  render();
+}
+function exportCSV() {
+  const cols=['Entreprise','Secteur','Taille','CA n-1','Site','LinkedIn Ent.','Dirigeants','Statut','Priorité','Source','Date contact','Prochain suivi','Commentaires','Nb interactions'];
+  const rows=prospects.map(p=>[
+    p.nom,p.secteur,p.taille,p.ca,p.site,p.lico,
+    (p.dirs||[]).map(d=>`${d.nom} (${d.email||d.tel||''})`).join(' | '),
+    p.statut,p.priorite,p.source,p.date,p.suivi,p.notes,(p.interactions||[]).length
+  ]);
+  const csv=[cols,...rows].map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='isare_export.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* HELPERS */
+function avatarHtml(p, size=30, fontSize=11) {
+  if (p.logo) return `<div class="avatar" style="width:${size}px;height:${size}px"><img src="${p.logo}" alt="logo"></div>`;
+  return `<div class="avatar" style="width:${size}px;height:${size}px;font-size:${fontSize}px">${ini(p.nom)}</div>`;
+}
+function ini(n) { if(!n)return'?'; return n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtD(d) { if(!d)return''; const[y,m,day]=d.split('-'); return `${day}/${m}/${y}`; }
+function fmtCA(n) {
+  if(!n)return'';
+  if(n>=1000000) return (n/1000000).toFixed(1).replace('.0','')+'M€';
+  if(n>=1000) return Math.round(n/1000)+'k€';
+  return n+'€';
+}
+function sbadge(s) {
+  const c=SC[s]||'#888';
+  return `<span class="sbadge" style="background:${c}18;color:${c};border:1px solid ${c}30">
+    <span style="width:5px;height:5px;border-radius:50%;background:${c};flex-shrink:0"></span>${esc(s)}</span>`;
+}
+function pbadge(p) {
+  const c=PC[p]||'#888';
+  return `<span class="pbadge"><span style="width:7px;height:7px;border-radius:50%;background:${c}"></span><span style="color:var(--t2);font-size:12px">${esc(p||'—')}</span></span>`;
+}
+
+render();
+</script>
+</body>
+</html>
