@@ -835,6 +835,7 @@ function openModal(id=null) {
   } else { addDir(); tempInteractions=[]; }
   setLogoPreview(tempLogo);
   updateHistoCount();
+  document.getElementById('overlay').classList.add('open');
 }
 function closeModal() { document.getElementById('overlay').classList.remove('open'); editId=null; }
 function closeOvl(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
