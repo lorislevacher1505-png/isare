@@ -310,6 +310,56 @@ textarea.finput { resize: vertical; min-height: 76px; }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 3px; }
+/* VEILLE */
+.veille-content { padding:22px; }
+.search-banner { background:var(--accent-dim); border:1px solid var(--accent); border-radius:var(--rs); padding:10px 16px; margin-bottom:16px; display:none; align-items:center; gap:10px; font-size:13px; }
+.search-banner.show { display:flex; }
+.search-banner strong { color:var(--accent); }
+.v-legend { display:flex; gap:16px; font-size:12px; color:var(--t2); align-items:center; margin-bottom:16px; }
+.ldot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.comp-list { display:flex; flex-direction:column; gap:14px; }
+.comp-card { background:var(--s2); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.comp-card.threat-h { border-left:3px solid var(--danger); }
+.comp-card.threat-m { border-left:3px solid var(--warning); }
+.comp-card.threat-l { border-left:3px solid var(--accent); }
+.comp-card.v-highlighted { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-dim); }
+.comp-card.v-dimmed { opacity:0.3; }
+.comp-head { display:flex; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); cursor:pointer; }
+.comp-head:hover { background:var(--s3); }
+.comp-logo-v { width:36px; height:36px; border-radius:var(--rs); display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-size:12px; font-weight:700; flex-shrink:0; margin-right:12px; background:var(--s3); color:var(--accent); }
+.comp-name-v { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.comp-sec-v { font-size:12px; color:var(--t3); margin-top:1px; }
+.vthreat { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:2px 8px; border-radius:20px; font-weight:500; }
+.vth { background:rgba(224,85,85,0.12); color:var(--danger); }
+.vtm { background:rgba(232,168,56,0.12); color:var(--warning); }
+.vtl { background:rgba(74,158,107,0.12); color:var(--accent); }
+.comp-stats { display:flex; gap:22px; align-items:center; margin-left:auto; }
+.vstat-val { font-family:'Outfit',sans-serif; font-size:20px; font-weight:700; line-height:1; }
+.vstat-lbl { font-size:11px; color:var(--t3); margin-top:1px; }
+.vtoggle-btn { width:28px; height:28px; border-radius:6px; background:var(--s3); border:none; cursor:pointer; color:var(--t3); display:flex; align-items:center; justify-content:center; margin-left:14px; flex-shrink:0; }
+.clients-zone { padding:14px 18px 16px; }
+.clients-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.clients-lbl { font-size:10.5px; font-weight:600; color:var(--t3); text-transform:uppercase; letter-spacing:0.8px; }
+.add-client-btn { display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border:1px dashed var(--border-h); border-radius:6px; background:none; color:var(--t3); font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+.add-client-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+.clients-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.client-pill { display:flex; align-items:center; gap:7px; padding:6px 10px; border-radius:var(--rs); border:1px solid var(--border); background:var(--s3); font-size:12.5px; }
+.client-pill.cpcommon { background:rgba(224,85,85,0.08); border-color:rgba(224,85,85,0.25); }
+.client-pill.cphit { background:rgba(74,158,107,0.15); border-color:var(--accent); }
+.cdot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.cli-name { color:var(--t1); font-weight:500; }
+.client-pill.cpcommon .cli-name { color:var(--danger); }
+.client-pill.cphit .cli-name { color:var(--accent); }
+.cli-sector { font-size:11px; color:var(--t3); }
+.del-cli { background:none; border:none; color:var(--t3); cursor:pointer; font-size:11px; padding:1px 4px; border-radius:3px; margin-left:2px; display:none; }
+.client-pill:hover .del-cli { display:inline; }
+.del-cli:hover { color:var(--danger); }
+.add-form { background:var(--s3); border:1px solid var(--border); border-radius:var(--rs); padding:12px; margin-top:10px; display:none; }
+.add-form.open { display:block; }
+.add-form-row { display:grid; grid-template-columns:1fr 1fr auto auto; gap:8px; align-items:end; }
+.fg-v { display:flex; flex-direction:column; gap:4px; }
+.common-toggle { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--t2); cursor:pointer; }
+.common-toggle input { accent-color:var(--danger); }
 </style>
 </head>
 <body>
@@ -336,14 +386,22 @@ textarea.finput { resize: vertical; min-height: 76px; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="4" height="14" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="18" y="9" width="4" height="12" rx="1"/></svg>
       Pipeline Kanban
     </button>
+    <button class="nav-item" onclick="setView('veille')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      Veille concurrentielle
+    </button>
   </div>
-  <div class="sb-section">
+  <div class="sb-section" id="sb-filters">
     <div class="sb-label">Statut</div>
     <div id="status-filters"></div>
   </div>
-  <div class="sb-section">
+  <div class="sb-section" id="sb-prio">
     <div class="sb-label">Priorité</div>
     <div id="priority-filters"></div>
+  </div>
+  <div class="sb-section" id="sb-veille-stats" style="display:none">
+    <div class="sb-label">Concurrents</div>
+    <div id="veille-sb-filters"></div>
   </div>
   <div class="sb-stats" id="sb-stats"></div>
 </aside>
@@ -353,10 +411,10 @@ textarea.finput { resize: vertical; min-height: 76px; }
     <div class="topbar-title" id="page-title">Tableau de bord</div>
     <div class="search-box">
       <span class="si"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
-      <input type="text" id="search" placeholder="Rechercher…" oninput="render()">
+      <input type="text" id="search" placeholder="Rechercher…" oninput="onSearchInput()">
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-      <div class="vtoggle">
+      <div class="vtoggle" id="tv-toggle">
         <button class="vbtn active" id="vt" onclick="setTV('table')">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Liste
         </button>
@@ -369,13 +427,17 @@ textarea.finput { resize: vertical; min-height: 76px; }
         <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
-      <button class="btn btn-g" onclick="exportCSV()">
+      <button class="btn btn-g" id="btn-export" onclick="exportCSV()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Export CSV
       </button>
-      <button class="btn btn-p" onclick="openModal()">
+      <button class="btn btn-p" id="btn-new" onclick="openModal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Nouveau prospect
+      </button>
+      <button class="btn btn-p" id="btn-new-veille" onclick="openVeilleModal()" style="display:none">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouveau concurrent
       </button>
     </div>
   </div>
@@ -605,9 +667,20 @@ async function loadProspects() {
 
 function setView(v) {
   curView = v;
-  document.querySelectorAll('.nav-item').forEach((el,i) => el.classList.toggle('active', ['dashboard','prospects','pipeline'][i]===v));
-  document.getElementById('page-title').textContent = {dashboard:'Tableau de bord',prospects:'Mes prospects',pipeline:'Pipeline Kanban'}[v];
-  render();
+  document.querySelectorAll('.nav-item').forEach((el,i) => el.classList.toggle('active', ['dashboard','prospects','pipeline','veille'][i]===v));
+  document.getElementById('page-title').textContent = {dashboard:'Tableau de bord',prospects:'Mes prospects',pipeline:'Pipeline Kanban',veille:'Veille concurrentielle'}[v];
+  const isVeille = v === 'veille';
+  document.getElementById('sb-filters').style.display = isVeille ? 'none' : '';
+  document.getElementById('sb-prio').style.display = isVeille ? 'none' : '';
+  document.getElementById('sb-veille-stats').style.display = isVeille ? '' : 'none';
+  document.getElementById('sb-stats').style.display = isVeille ? 'none' : '';
+  document.getElementById('tv-toggle').style.display = isVeille ? 'none' : '';
+  document.getElementById('btn-export').style.display = isVeille ? 'none' : '';
+  document.getElementById('btn-new').style.display = isVeille ? 'none' : '';
+  document.getElementById('btn-new-veille').style.display = isVeille ? '' : 'none';
+  document.getElementById('search').placeholder = isVeille ? 'Rechercher un client (ex: "BNP")…' : 'Rechercher…';
+  if (isVeille) { veilleSearchQ = ''; document.getElementById('search').value = ''; renderVeille(); }
+  else render();
 }
 function setTV(v) {
   tableView = v;
@@ -622,6 +695,15 @@ function switchTab(t) {
     document.getElementById('panel-'+x).classList.toggle('active', x===t);
   });
   if (t==='histo') renderHistoList();
+}
+
+function onSearchInput() {
+  if (curView === 'veille') {
+    veilleSearchQ = document.getElementById('search').value.trim().toLowerCase();
+    renderVeille();
+  } else {
+    render();
+  }
 }
 
 function filtered() {
@@ -1030,5 +1112,244 @@ render();
 loadProspects();
 </script>
 <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+<!-- VEILLE MODAL -->
+<div class="overlay" id="veille-overlay" onclick="closeVeilleOvl(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="veille-modal-title">Nouveau concurrent</div>
+      <button class="abtn" onclick="closeVeilleModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="fsec">
+        <div class="fsec-title">Concurrent</div>
+        <div class="fgrid">
+          <div class="fg s2"><label class="flabel">Nom *</label><input class="finput" id="vc-nom" placeholder="ex: Acme Solutions" type="text"></div>
+          <div class="fg"><label class="flabel">Secteur</label><input class="finput" id="vc-secteur" placeholder="ex: Conseil RH"></div>
+          <div class="fg"><label class="flabel">Niveau de menace</label>
+            <select class="finput" id="vc-threat">
+              <option value="h">🔴 Haute</option>
+              <option value="m">🟡 Moyenne</option>
+              <option value="l">🟢 Faible</option>
+            </select>
+          </div>
+          <div class="fg"><label class="flabel">Site internet</label><input class="finput" id="vc-site" placeholder="https://…" type="url"></div>
+          <div class="fg"><label class="flabel">LinkedIn</label><input class="finput" id="vc-linkedin" placeholder="https://linkedin.com/…" type="url"></div>
+          <div class="fg"><label class="flabel">Points forts</label><input class="finput" id="vc-strengths" placeholder="ex: Prix agressifs, Notoriété…"></div>
+          <div class="fg"><label class="flabel">Points faibles</label><input class="finput" id="vc-weaknesses" placeholder="ex: SAV lent…"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-g" onclick="closeVeilleModal()">Annuler</button>
+      <button class="btn btn-p" onclick="saveComp()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== VEILLE DATA ===== */
+let comps = JSON.parse(localStorage.getItem('isare_veille') || '[]');
+let veilleEditId = null;
+let openCards = {};
+let veilleSearchQ = '';
+
+function vPersist() { localStorage.setItem('isare_veille', JSON.stringify(comps)); }
+function vUid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+/* ===== VEILLE VIEW ===== */
+function renderVeille() {
+  const el = document.getElementById('main-content');
+  el.innerHTML = `<div class="veille-content">
+    ${renderVeilleKPIs()}
+    <div class="search-banner ${veilleSearchQ?'show':''}" id="search-banner">${renderBannerContent()}</div>
+    <div class="v-legend">
+      <div style="display:flex;align-items:center;gap:6px"><div class="ldot" style="background:var(--danger)"></div>Client en commun avec vous</div>
+      <div style="display:flex;align-items:center;gap:6px"><div class="ldot" style="background:var(--t3)"></div>Client uniquement chez eux</div>
+    </div>
+    <div class="comp-list">${renderCompList()}</div>
+  </div>`;
+  renderVeilleSidebar();
+}
+
+function renderVeilleKPIs() {
+  const total = comps.length;
+  const allClients = comps.flatMap(c => c.clients||[]);
+  const uniqueClients = new Set(allClients.map(cl => cl.name.toLowerCase())).size;
+  const common = allClients.filter(cl => cl.common).length;
+  const highThreat = comps.filter(c => c.threat==='h').length;
+  return `<div class="kpi-grid" style="margin-bottom:20px">
+    <div class="kpi k1"><div class="kpi-label">Concurrents</div><div class="kpi-val">${total}</div><div class="kpi-sub">répertoriés</div></div>
+    <div class="kpi k2"><div class="kpi-label">Clients suivis</div><div class="kpi-val">${uniqueClients}</div><div class="kpi-sub">au total</div></div>
+    <div class="kpi k3"><div class="kpi-label">Clients en commun</div><div class="kpi-val" style="color:var(--danger)">${common}</div><div class="kpi-sub">à surveiller</div></div>
+    <div class="kpi k4"><div class="kpi-label">Menace haute</div><div class="kpi-val" style="color:var(--warning)">${highThreat}</div><div class="kpi-sub">concurrent${highThreat!==1?'s':''}</div></div>
+  </div>`;
+}
+
+function renderBannerContent() {
+  if (!veilleSearchQ) return '';
+  const matches = comps.filter(c => (c.clients||[]).some(cl => cl.name.toLowerCase().includes(veilleSearchQ)));
+  if (!matches.length) return `🔍 Aucun concurrent ne travaille avec <strong>"${esc(veilleSearchQ)}"</strong>`;
+  return `🔍 <strong>"${esc(veilleSearchQ)}"</strong> : travaille avec ${matches.map(c=>`<strong>${esc(c.nom)}</strong>`).join(', ')}`;
+}
+
+function renderCompList() {
+  if (!comps.length) return `<div style="text-align:center;padding:60px 20px;color:var(--t3)">
+    <div style="font-size:40px;margin-bottom:12px;opacity:0.4">🔍</div>
+    <div style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--t2);margin-bottom:6px">Aucun concurrent encore</div>
+    <div style="font-size:13px">Cliquez sur "Nouveau concurrent" pour commencer.</div>
+  </div>`;
+
+  const sorted = [...comps].sort((a,b) => ({h:0,m:1,l:2}[a.threat]||1) - ({h:0,m:1,l:2}[b.threat]||1));
+  return sorted.map(c => {
+    const clients = c.clients||[];
+    const common = clients.filter(cl=>cl.common).length;
+    const isOpen = openCards[c.id] !== false;
+    let highlighted = false, dimmed = false;
+    if (veilleSearchQ) {
+      highlighted = clients.some(cl => cl.name.toLowerCase().includes(veilleSearchQ));
+      dimmed = !highlighted;
+    }
+    const threatMap = { h:['vth','Menace haute'], m:['vtm','Menace moyenne'], l:['vtl','Menace faible'] };
+    const [tc, tl] = threatMap[c.threat]||['vtl','Menace faible'];
+    const clientsHtml = !clients.length
+      ? `<span style="font-size:12.5px;color:var(--t3);font-style:italic">Aucun client — cliquez sur "+ Ajouter"</span>`
+      : clients.map(cl => {
+          const isHit = veilleSearchQ && cl.name.toLowerCase().includes(veilleSearchQ);
+          const pc = isHit ? 'cphit' : cl.common ? 'cpcommon' : '';
+          const dc = isHit ? 'var(--accent)' : cl.common ? 'var(--danger)' : 'var(--t3)';
+          return `<div class="client-pill ${pc}">
+            <div class="cdot" style="background:${dc}"></div>
+            <div><div class="cli-name">${esc(cl.name)}</div>${cl.sector?`<div class="cli-sector">${esc(cl.sector)}</div>`:''}</div>
+            <button class="del-cli" onclick="delClient('${c.id}','${cl.id}')">✕</button>
+          </div>`;
+        }).join('');
+    return `<div class="comp-card threat-${c.threat} ${highlighted?'v-highlighted':''} ${dimmed?'v-dimmed':''}">
+      <div class="comp-head" onclick="toggleVCard('${c.id}')">
+        <div class="comp-logo-v">${ini(c.nom)}</div>
+        <div style="flex:1">
+          <div class="comp-name-v">${esc(c.nom)}<span class="vthreat ${tc}">${tl}</span></div>
+          <div class="comp-sec-v">${esc(c.secteur||'')}${c.site?` · <a href="${esc(c.site)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent);text-decoration:none">${esc(c.site.replace(/https?:\/\//,''))}</a>`:''}</div>
+        </div>
+        <div class="comp-stats">
+          <div style="text-align:right"><div class="vstat-val" style="color:${common>0?'var(--danger)':'var(--t3)'}">${common}/${clients.length}</div><div class="vstat-lbl">en commun</div></div>
+          <div style="text-align:right"><div class="vstat-val">${clients.length}</div><div class="vstat-lbl">clients total</div></div>
+          <button class="abtn" onclick="event.stopPropagation();openVeilleModal('${c.id}')" title="Modifier">✏️</button>
+          <button class="abtn" onclick="event.stopPropagation();delComp('${c.id}')" title="Supprimer" style="color:var(--danger)">🗑️</button>
+          <div class="vtoggle-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transform:rotate(${isOpen?180:0}deg);transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+      </div>
+      ${isOpen ? `<div class="clients-zone">
+        <div class="clients-head">
+          <span class="clients-lbl">Clients (${clients.length})</span>
+          <button class="add-client-btn" onclick="toggleAddForm('${c.id}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un client
+          </button>
+        </div>
+        <div class="clients-grid">${clientsHtml}</div>
+        <div class="add-form" id="form-${c.id}">
+          <div class="add-form-row">
+            <div class="fg-v"><label class="flabel">Nom du client *</label><input class="finput" id="cn-${c.id}" placeholder="ex: BNP Paribas" onkeydown="if(event.key==='Enter')addClient('${c.id}')"></div>
+            <div class="fg-v"><label class="flabel">Secteur</label><input class="finput" id="cs-${c.id}" placeholder="ex: Banque" onkeydown="if(event.key==='Enter')addClient('${c.id}')"></div>
+            <div class="fg-v" style="justify-content:flex-end"><label class="common-toggle"><input type="checkbox" id="cc-${c.id}"> En commun</label></div>
+            <div class="fg-v" style="justify-content:flex-end"><button class="btn btn-p" style="padding:7px 12px" onclick="addClient('${c.id}')">Ajouter</button></div>
+          </div>
+        </div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderVeilleSidebar() {
+  const el = document.getElementById('veille-sb-filters');
+  if (!el) return;
+  const threatMap = { h:'🔴 Menace haute', m:'🟡 Menace moyenne', l:'🟢 Menace faible' };
+  el.innerHTML = ['h','m','l'].map(t => {
+    const n = comps.filter(c=>c.threat===t).length;
+    return `<div class="chip"><span style="font-size:12px;color:var(--t2)">${threatMap[t]}</span><span class="chip-count">${n}</span></div>`;
+  }).join('');
+}
+
+/* ===== CARD TOGGLE ===== */
+function toggleVCard(id) {
+  openCards[id] = openCards[id] === false ? true : false;
+  renderVeille();
+}
+function toggleAddForm(id) {
+  const f = document.getElementById('form-'+id);
+  if (!f) return;
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) setTimeout(()=>{ const i=document.getElementById('cn-'+id); if(i)i.focus(); },50);
+}
+
+/* ===== CLIENTS ===== */
+function addClient(compId) {
+  const nameEl = document.getElementById('cn-'+compId);
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) { if(nameEl)nameEl.focus(); return; }
+  const comp = comps.find(c=>c.id===compId);
+  if (!comp) return;
+  if (!comp.clients) comp.clients = [];
+  comp.clients.push({ id:vUid(), name, sector:(document.getElementById('cs-'+compId)||{}).value?.trim()||'', common:!!(document.getElementById('cc-'+compId)||{}).checked });
+  vPersist();
+  openCards[compId] = true;
+  renderVeille();
+  setTimeout(()=>{ const f=document.getElementById('form-'+compId); if(f)f.classList.add('open'); const i=document.getElementById('cn-'+compId); if(i)i.focus(); },30);
+}
+function delClient(compId, clientId) {
+  const comp = comps.find(c=>c.id===compId);
+  if (!comp) return;
+  comp.clients = (comp.clients||[]).filter(cl=>cl.id!==clientId);
+  vPersist(); renderVeille();
+}
+
+/* ===== VEILLE MODAL ===== */
+function openVeilleModal(id=null) {
+  veilleEditId = id;
+  document.getElementById('veille-modal-title').textContent = id ? 'Modifier le concurrent' : 'Nouveau concurrent';
+  ['vc-nom','vc-secteur','vc-site','vc-linkedin','vc-strengths','vc-weaknesses'].forEach(x=>document.getElementById(x).value='');
+  document.getElementById('vc-threat').value='h';
+  if (id) {
+    const c = comps.find(x=>x.id===id);
+    if (c) {
+      document.getElementById('vc-nom').value=c.nom||'';
+      document.getElementById('vc-secteur').value=c.secteur||'';
+      document.getElementById('vc-threat').value=c.threat||'h';
+      document.getElementById('vc-site').value=c.site||'';
+      document.getElementById('vc-linkedin').value=c.linkedin||'';
+      document.getElementById('vc-strengths').value=(c.strengths||[]).join(', ');
+      document.getElementById('vc-weaknesses').value=(c.weaknesses||[]).join(', ');
+    }
+  }
+  document.getElementById('veille-overlay').classList.add('open');
+}
+function closeVeilleModal() { document.getElementById('veille-overlay').classList.remove('open'); veilleEditId=null; }
+function closeVeilleOvl(e) { if(e.target===document.getElementById('veille-overlay')) closeVeilleModal(); }
+
+function saveComp() {
+  const nom = document.getElementById('vc-nom').value.trim();
+  if (!nom) { alert('Le nom est requis.'); return; }
+  const data = {
+    id: veilleEditId||vUid(), nom,
+    secteur: document.getElementById('vc-secteur').value.trim(),
+    threat: document.getElementById('vc-threat').value,
+    site: document.getElementById('vc-site').value.trim(),
+    linkedin: document.getElementById('vc-linkedin').value.trim(),
+    strengths: document.getElementById('vc-strengths').value.split(',').map(s=>s.trim()).filter(Boolean),
+    weaknesses: document.getElementById('vc-weaknesses').value.split(',').map(s=>s.trim()).filter(Boolean),
+    clients: veilleEditId ? (comps.find(c=>c.id===veilleEditId)?.clients||[]) : [],
+  };
+  if (veilleEditId) { const i=comps.findIndex(c=>c.id===veilleEditId); if(i>=0)comps[i]=data; }
+  else { comps.push(data); openCards[data.id]=true; }
+  vPersist(); closeVeilleModal(); renderVeille();
+}
+function delComp(id) {
+  if (!confirm('Supprimer ce concurrent ?')) return;
+  comps = comps.filter(c=>c.id!==id); vPersist(); renderVeille();
+}
+</script>
+
 </body>
 </html>
