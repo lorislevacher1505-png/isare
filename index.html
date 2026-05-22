@@ -502,17 +502,20 @@ textarea.finput { resize: vertical; min-height: 76px; }
 </div>
 
 <script>
+const API = 'https://script.google.com/macros/s/AKfycbwOYIL3LGDZEaOD_FxPQ1QigkgN0GmTidhHiOrtB9RcGdQQ1eTKoyJdsvIn6YX8cjsY/exec';
+
 const SC = { 'À contacter':'#9B5DE5','Contacté':'#4361EE','En discussion':'#E8A838','Signé':'#4A9E6B','Perdu':'#E05555' };
 const PC = { 'Haute':'#E05555','Moyenne':'#E8A838','Faible':'#4A9E6B' };
 const STATUSES = Object.keys(SC);
 const TYPE_COLORS = { '📞 Appel':'#4361EE','📧 Email':'#9B5DE5','🤝 RDV':'#4A9E6B','💬 LinkedIn':'#0077B5','📝 Autre':'#888' };
 
-let prospects = JSON.parse(localStorage.getItem('isare_prospects') || '[]');
+let prospects = [];
 let curView = 'dashboard', tableView = 'table', editId = null;
 let fStatus = null, fPrio = null, sortCol = null, sortDir = 1;
 let dirCount = 0, curTab = 'fiche';
 let tempInteractions = [];
 let tempLogo = null;
+let isLoading = false;
 
 // Theme
 let isDark = localStorage.getItem('isare_theme') !== 'light';
@@ -525,8 +528,80 @@ function applyTheme() {
 function toggleTheme() { isDark = !isDark; applyTheme(); }
 applyTheme();
 
-function persist() { localStorage.setItem('isare_prospects', JSON.stringify(prospects)); }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+/* ===== API ===== */
+async function apiGet() {
+  const res = await fetch(`${API}?action=getAll`);
+  const data = await res.json();
+  return data.prospects || [];
+}
+async function apiSave(prospect) {
+  const res = await fetch(API, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'save', prospect }),
+  });
+  return res.json();
+}
+async function apiDelete(id) {
+  const res = await fetch(API, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'delete', id }),
+  });
+  return res.json();
+}
+
+/* ===== LOADING STATE ===== */
+function setLoading(on, msg = 'Synchronisation…') {
+  isLoading = on;
+  let el = document.getElementById('loading-bar');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-bar';
+    el.style.cssText = `position:fixed;top:0;left:0;right:0;z-index:999;height:3px;background:var(--accent);
+      transform-origin:left;transition:transform 0.3s;transform:scaleX(0)`;
+    document.body.appendChild(el);
+  }
+  let toast = document.getElementById('loading-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'loading-toast';
+    toast.style.cssText = `position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+      background:var(--s1);border:1px solid var(--border-h);border-radius:8px;
+      padding:9px 18px;font-size:13px;color:var(--t2);z-index:999;
+      display:flex;align-items:center;gap:9px;transition:opacity 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.3)`;
+    document.body.appendChild(toast);
+  }
+  if (on) {
+    el.style.transform = 'scaleX(0.7)';
+    toast.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> ${msg}`;
+    toast.style.opacity = '1'; toast.style.pointerEvents = 'none';
+  } else {
+    el.style.transform = 'scaleX(1)';
+    setTimeout(() => { el.style.transform = 'scaleX(0)'; toast.style.opacity = '0'; }, 400);
+  }
+}
+function showToast(msg, color = 'var(--accent)') {
+  let toast = document.getElementById('loading-toast');
+  if (!toast) return;
+  toast.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> ${msg}`;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 2200);
+}
+
+/* ===== INIT ===== */
+async function loadProspects() {
+  setLoading(true, 'Chargement des prospects…');
+  try {
+    prospects = await apiGet();
+    render();
+    showToast('Données chargées');
+  } catch(e) {
+    showToast('Erreur de connexion au serveur', 'var(--danger)');
+    render();
+  }
+  setLoading(false);
+}
 
 function setView(v) {
   curView = v;
@@ -854,35 +929,54 @@ function renderHistoList() {
   }).join('');
 }
 
-function save() {
-  const nom=document.getElementById('f-nom').value.trim();
+async function save() {
+  const nom = document.getElementById('f-nom').value.trim();
   if (!nom) { alert("Le nom de l'entreprise est requis."); return; }
   const data = {
-    id:editId||uid(), nom,
-    secteur:document.getElementById('f-secteur').value.trim(),
-    taille:document.getElementById('f-taille').value,
-    ca:document.getElementById('f-ca').value?parseFloat(document.getElementById('f-ca').value):null,
-    site:document.getElementById('f-site').value.trim(),
-    lico:document.getElementById('f-lico').value.trim(),
-    dirs:getDirs(),
-    statut:document.getElementById('f-statut').value,
-    priorite:document.getElementById('f-priorite').value,
-    source:document.getElementById('f-source').value,
-    date:document.getElementById('f-date').value,
-    suivi:document.getElementById('f-suivi').value,
-    notes:document.getElementById('f-notes').value.trim(),
-    interactions:tempInteractions,
+    id: editId || uid(), nom,
+    secteur: document.getElementById('f-secteur').value.trim(),
+    taille: document.getElementById('f-taille').value,
+    ca: document.getElementById('f-ca').value ? parseFloat(document.getElementById('f-ca').value) : null,
+    site: document.getElementById('f-site').value.trim(),
+    lico: document.getElementById('f-lico').value.trim(),
+    dirs: getDirs(),
+    statut: document.getElementById('f-statut').value,
+    priorite: document.getElementById('f-priorite').value,
+    source: document.getElementById('f-source').value,
+    date: document.getElementById('f-date').value,
+    suivi: document.getElementById('f-suivi').value,
+    notes: document.getElementById('f-notes').value.trim(),
+    interactions: tempInteractions,
     logo: tempLogo,
-    ts:editId?(prospects.find(p=>p.id===editId)?.ts||Date.now()):Date.now(),
+    ts: editId ? (prospects.find(p => p.id === editId)?.ts || Date.now()) : Date.now(),
   };
-  if (editId) { const i=prospects.findIndex(p=>p.id===editId); if(i>=0) prospects[i]=data; }
+  closeModal();
+  // Optimistic update
+  if (editId) { const i = prospects.findIndex(p => p.id === editId); if (i >= 0) prospects[i] = data; }
   else prospects.push(data);
-  persist(); closeModal(); render();
+  render();
+  setLoading(true, 'Enregistrement…');
+  try {
+    await apiSave(data);
+    showToast('Prospect enregistré ✓');
+  } catch(e) {
+    showToast('Erreur lors de l\'enregistrement', 'var(--danger)');
+  }
+  setLoading(false);
 }
 
-function delP(id) {
+async function delP(id) {
   if (!confirm('Supprimer ce prospect ?')) return;
-  prospects=prospects.filter(p=>p.id!==id); persist(); render();
+  prospects = prospects.filter(p => p.id !== id);
+  render();
+  setLoading(true, 'Suppression…');
+  try {
+    await apiDelete(id);
+    showToast('Prospect supprimé');
+  } catch(e) {
+    showToast('Erreur lors de la suppression', 'var(--danger)');
+  }
+  setLoading(false);
 }
 function srt(col) {
   if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=1; }
@@ -932,6 +1026,8 @@ function pbadge(p) {
 }
 
 render();
+loadProspects();
 </script>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 </body>
 </html>
