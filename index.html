@@ -593,17 +593,25 @@ applyTheme();
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 /* ===== API ===== */
+// Logos stored locally (too large for Sheets/URL)
+function saveLogo(id, logo) { if (logo) localStorage.setItem('isare_logo_'+id, logo); else localStorage.removeItem('isare_logo_'+id); }
+function getLogo(id) { return localStorage.getItem('isare_logo_'+id) || null; }
+function rehydrateLogos(list) { return list.map(p => ({ ...p, logo: getLogo(p.id) })); }
+
 async function apiGet() {
   const res = await fetch(`${API}?action=getAll`);
   const data = await res.json();
-  return data.prospects || [];
+  return rehydrateLogos(data.prospects || []);
 }
 async function apiSave(prospect) {
-  const payload = encodeURIComponent(JSON.stringify({ action: 'save', prospect }));
+  // Strip logo before sending to Sheet
+  const p = Object.assign({}, prospect, { logo: '' });
+  const payload = encodeURIComponent(JSON.stringify({ action: 'save', prospect: p }));
   const res = await fetch(`${API}?payload=${payload}`);
   return res.json();
 }
 async function apiDelete(id) {
+  localStorage.removeItem('isare_logo_'+id);
   const payload = encodeURIComponent(JSON.stringify({ action: 'delete', id }));
   const res = await fetch(`${API}?payload=${payload}`);
   return res.json();
@@ -1011,8 +1019,9 @@ function renderHistoList() {
 async function save() {
   const nom = document.getElementById('f-nom').value.trim();
   if (!nom) { alert("Le nom de l'entreprise est requis."); return; }
+  const id = editId || uid();
   const data = {
-    id: editId || uid(), nom,
+    id, nom,
     secteur: document.getElementById('f-secteur').value.trim(),
     taille: document.getElementById('f-taille').value,
     ca: document.getElementById('f-ca').value ? parseFloat(document.getElementById('f-ca').value) : null,
@@ -1029,17 +1038,19 @@ async function save() {
     logo: tempLogo,
     ts: editId ? (prospects.find(p => p.id === editId)?.ts || Date.now()) : Date.now(),
   };
+  // Save logo locally
+  saveLogo(id, tempLogo);
   closeModal();
-  // Optimistic update
-  if (editId) { const i = prospects.findIndex(p => p.id === editId); if (i >= 0) prospects[i] = data; }
-  else prospects.push(data);
-  render();
   setLoading(true, 'Enregistrement…');
   try {
     await apiSave(data);
+    // Reload from Sheet after successful save to avoid duplicates
+    prospects = await apiGet();
+    render();
     showToast('Prospect enregistré ✓');
   } catch(e) {
     showToast('Erreur lors de l\'enregistrement', 'var(--danger)');
+    render();
   }
   setLoading(false);
 }
