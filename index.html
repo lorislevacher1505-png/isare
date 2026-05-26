@@ -599,17 +599,13 @@ async function apiGet() {
   return data.prospects || [];
 }
 async function apiSave(prospect) {
-  const res = await fetch(API, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'save', prospect }),
-  });
+  const payload = encodeURIComponent(JSON.stringify({ action: 'save', prospect }));
+  const res = await fetch(`${API}?payload=${payload}`);
   return res.json();
 }
 async function apiDelete(id) {
-  const res = await fetch(API, {
-    method: 'POST',
-    body: JSON.stringify({ action: 'delete', id }),
-  });
+  const payload = encodeURIComponent(JSON.stringify({ action: 'delete', id }));
+  const res = await fetch(`${API}?payload=${payload}`);
   return res.json();
 }
 
