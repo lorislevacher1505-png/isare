@@ -310,7 +310,35 @@ textarea.finput { resize: vertical; min-height: 76px; }
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--s3); border-radius: 3px; }
-/* VEILLE */
+/* FICHE POP-UP */
+.fiche-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(5px); z-index:200; display:flex; align-items:center; justify-content:center; padding:24px; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.fiche-overlay.open { opacity:1; pointer-events:all; }
+.fiche-modal { background:var(--s2); border:1px solid var(--border-h); border-radius:16px; width:100%; max-width:620px; max-height:88vh; overflow-y:auto; transform:translateY(12px); transition:transform 0.2s; }
+.fiche-overlay.open .fiche-modal { transform:translateY(0); }
+.fiche-hd { display:flex; align-items:center; gap:14px; padding:22px 24px 18px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--s2); z-index:1; }
+.fiche-logo { width:48px; height:48px; border-radius:10px; background:var(--accent-dim); display:flex; align-items:center; justify-content:center; font-family:'Outfit',sans-serif; font-size:16px; font-weight:700; color:var(--accent); flex-shrink:0; overflow:hidden; }
+.fiche-logo img { width:100%; height:100%; object-fit:contain; padding:3px; }
+.fiche-nom { font-family:'Outfit',sans-serif; font-size:20px; font-weight:700; }
+.fiche-sec { font-size:12.5px; color:var(--t3); margin-top:2px; }
+.fiche-body { padding:20px 24px; }
+.fiche-section { margin-bottom:22px; }
+.fiche-section-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.fiche-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+.fiche-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.fiche-field { background:var(--s3); border-radius:var(--rs); padding:10px 12px; }
+.fiche-field-label { font-size:10.5px; color:var(--t3); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.5px; }
+.fiche-field-val { font-size:13.5px; color:var(--t1); font-weight:500; }
+.fiche-field-val a { color:var(--accent); text-decoration:none; }
+.fiche-field-val a:hover { text-decoration:underline; }
+.fiche-dir { background:var(--s3); border-radius:var(--rs); padding:12px; margin-bottom:8px; }
+.fiche-dir-name { font-size:14px; font-weight:600; margin-bottom:6px; }
+.fiche-dir-meta { display:flex; flex-wrap:wrap; gap:8px; font-size:12px; color:var(--t2); }
+.fiche-ft { padding:14px 24px 20px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid var(--border); }
+.fiche-histo-item { display:flex; gap:10px; padding-bottom:14px; }
+.fiche-histo-item:last-child { padding-bottom:0; }
+.fiche-histo-dot { width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.fiche-histo-type { font-size:11px; font-weight:600; padding:2px 7px; border-radius:20px; }
+</style>
 .veille-content { padding:22px; }
 .search-banner { background:var(--accent-dim); border:1px solid var(--accent); border-radius:var(--rs); padding:10px 16px; margin-bottom:16px; display:none; align-items:center; gap:10px; font-size:13px; }
 .search-banner.show { display:flex; }
@@ -444,6 +472,11 @@ textarea.finput { resize: vertical; min-height: 76px; }
   <div class="content" id="main-content"></div>
 </main>
 
+<!-- FICHE POP-UP -->
+<div class="fiche-overlay" id="fiche-overlay" onclick="closeFicheOvl(event)">
+  <div class="fiche-modal" id="fiche-modal"></div>
+</div>
+
 <!-- MODAL -->
 <div class="overlay" id="overlay" onclick="closeOvl(event)">
   <div class="modal">
@@ -564,7 +597,7 @@ textarea.finput { resize: vertical; min-height: 76px; }
 </div>
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbw2IkW8o94igKXTSmynV7IWYqR_-fW9stD--rA7HdP2Jq6l3uc06_WyDFEpxKXiZIiH/exec';
+const API = 'https://script.google.com/macros/s/AKfycbwhMZm-MMZKOkrNRHHGx32I-re6tC_N-9lf_ufOiP4nOG5GvEGeZhexmAfIs0YxAP8e/exec';
 
 const SC = { 'À contacter':'#9B5DE5','Contacté':'#4361EE','En discussion':'#E8A838','Signé':'#4A9E6B','Perdu':'#E05555' };
 const PC = { 'Haute':'#E05555','Moyenne':'#E8A838','Faible':'#4A9E6B' };
@@ -595,7 +628,13 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 /* ===== API ===== */
 function saveLogo(id, logo) { if (logo) localStorage.setItem('isare_logo_'+id, logo); else localStorage.removeItem('isare_logo_'+id); }
 function getLogo(id) { return localStorage.getItem('isare_logo_'+id) || null; }
-function rehydrateLogos(list) { return list.map(p => ({ ...p, logo: getLogo(p.id) })); }
+function rehydrateLogos(list) {
+  return list.map(p => {
+    // Prefer Drive URL from Sheet, fallback to localStorage
+    const logo = (p.logo && p.logo.startsWith('http')) ? p.logo : getLogo(p.id);
+    return { ...p, logo };
+  });
+}
 
 async function apiGet() {
   const res = await fetch(`${API}?action=getAll`);
@@ -809,7 +848,7 @@ function renderTable() {
       <tbody>${f.map(p=>{
         const d0=p.dirs&&p.dirs.length?p.dirs[0]:null;
         const icount=(p.interactions||[]).length;
-        return `<tr>
+        return `<tr style="cursor:pointer" onclick="openFiche('${p.id}')">
           <td style="max-width:170px"><div class="co-cell">
             ${avatarHtml(p,30,11)}
             <div><div class="co-name">${esc(p.nom)}</div>${p.secteur?`<div class="co-sec">${esc(p.secteur)}</div>`:''}</div>
@@ -820,11 +859,11 @@ function renderTable() {
           <td>${sbadge(p.statut)}</td><td>${pbadge(p.priorite)}</td>
           <td style="color:${p.suivi?'var(--warning)':'var(--t3)'}">${p.suivi?fmtD(p.suivi):'—'}</td>
           <td><span style="font-size:12px;color:var(--t2)">${icount>0?`<span style="color:var(--accent);font-weight:600">${icount}</span> échange(s)`:' —'}</span></td>
-          <td><div style="display:flex;gap:5px">
+          <td><div style="display:flex;gap:5px" onclick="event.stopPropagation()">
             ${p.site?`<a href="${esc(p.site)}" target="_blank" class="lico" title="Site web"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>`:''}
             ${p.lico?`<a href="${esc(p.lico)}" target="_blank" class="lico" title="LinkedIn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>`:''}
           </div></td>
-          <td><div style="display:flex;gap:3px">
+          <td><div style="display:flex;gap:3px" onclick="event.stopPropagation()">
             <button class="abtn" onclick="openModal('${p.id}')" title="Modifier">✏️</button>
             <button class="abtn del" onclick="delP('${p.id}')" title="Supprimer">🗑️</button>
           </div></td>
@@ -841,7 +880,7 @@ function renderGrid() {
     const d0=p.dirs&&p.dirs.length?p.dirs[0]:null;
     const c=SC[p.statut]||'#888';
     const icount=(p.interactions||[]).length;
-    return `<div class="card" style="border-top:2px solid ${c}" onclick="openModal('${p.id}')">
+    return `<div class="card" style="border-top:2px solid ${c}" onclick="openFiche('${p.id}')">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px">
         <div class="co-cell">
           ${avatarHtml(p,36,12)}
@@ -874,7 +913,7 @@ function renderKanban() {
         ${cards.map(p=>{
           const d0=p.dirs&&p.dirs.length?p.dirs[0]:null;
           const icount=(p.interactions||[]).length;
-          return `<div class="kb-card" onclick="openModal('${p.id}')">
+          return `<div class="kb-card" onclick="openFiche('${p.id}')">
             <div class="kb-co">${esc(p.nom)}</div>
             ${d0?`<div class="kb-dir">${esc(d0.nom)}</div>`:'<div class="kb-dir" style="color:var(--t3)">—</div>'}
             <div class="kb-meta">
@@ -966,6 +1005,20 @@ function handleLogo(e) {
   r.readAsDataURL(file);
   e.target.value = '';
 }
+
+async function uploadLogoToDrive(id, base64DataUrl) {
+  if (!base64DataUrl || !base64DataUrl.startsWith('data:')) return null;
+  const [meta, base64] = base64DataUrl.split(',');
+  const mimeType = meta.match(/:(.*?);/)[1];
+  const payload = encodeURIComponent(JSON.stringify({
+    action: 'uploadLogo', id, filename: id+'_logo', base64, mimeType
+  }));
+  try {
+    const res = await fetch(`${API}?payload=${payload}`);
+    const data = await res.json();
+    return data.url || null;
+  } catch(e) { return null; }
+}
 function setLogoPreview(src) {
   const el = document.getElementById('logo-preview');
   const btn = document.getElementById('logo-clear-btn');
@@ -1027,6 +1080,18 @@ async function save() {
   const nom = document.getElementById('f-nom').value.trim();
   if (!nom) { alert("Le nom de l'entreprise est requis."); return; }
   const id = editId || uid();
+
+  // Upload logo to Drive if new base64 image
+  let logoUrl = '';
+  if (tempLogo && tempLogo.startsWith('data:')) {
+    setLoading(true, 'Upload du logo…');
+    logoUrl = await uploadLogoToDrive(id, tempLogo) || '';
+    saveLogo(id, logoUrl);
+  } else if (tempLogo && tempLogo.startsWith('http')) {
+    logoUrl = tempLogo;
+    saveLogo(id, logoUrl);
+  }
+
   const data = {
     id, nom,
     secteur: document.getElementById('f-secteur').value.trim(),
@@ -1042,21 +1107,24 @@ async function save() {
     suivi: document.getElementById('f-suivi').value,
     notes: document.getElementById('f-notes').value.trim(),
     interactions: tempInteractions,
-    logo: tempLogo,
+    logo: logoUrl,
     ts: editId ? (prospects.find(p => p.id === editId)?.ts || Date.now()) : Date.now(),
   };
-  // Save logo locally
-  saveLogo(id, tempLogo);
   closeModal();
+  // Optimistic update — affichage immédiat
+  if (editId) { const i = prospects.findIndex(p => p.id === editId); if (i >= 0) prospects[i] = data; }
+  else prospects.push(data);
+  render();
+  // Sync en arrière-plan
   setLoading(true, 'Enregistrement…');
   try {
     await apiSave(data);
+    showToast('Prospect enregistré ✓');
+    // Resync discret pour confirmer
     prospects = await apiGet();
     render();
-    showToast('Prospect enregistré ✓');
   } catch(e) {
     showToast('Erreur lors de l\'enregistrement', 'var(--danger)');
-    render();
   }
   setLoading(false);
 }
@@ -1120,6 +1188,85 @@ function pbadge(p) {
   const c=PC[p]||'#888';
   return `<span class="pbadge"><span style="width:7px;height:7px;border-radius:50%;background:${c}"></span><span style="color:var(--t2);font-size:12px">${esc(p||'—')}</span></span>`;
 }
+
+/* ===== FICHE POP-UP ===== */
+function openFiche(id) {
+  const p = prospects.find(x => x.id === id);
+  if (!p) return;
+  const interactions = (p.interactions || []);
+  document.getElementById('fiche-modal').innerHTML = `
+    <div class="fiche-hd">
+      <div class="fiche-logo">${p.logo ? `<img src="${esc(p.logo)}" alt="logo">` : ini(p.nom)}</div>
+      <div style="flex:1">
+        <div class="fiche-nom">${esc(p.nom)}</div>
+        <div class="fiche-sec">${[p.secteur, p.taille ? p.taille+' pers.' : '', p.ca ? fmtCA(p.ca) : ''].filter(Boolean).join(' · ') || '—'}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+        ${sbadge(p.statut)}
+        ${pbadge(p.priorite)}
+        <button class="abtn" onclick="closeFiche()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="fiche-body">
+      <div class="fiche-section">
+        <div class="fiche-section-title">Entreprise</div>
+        <div class="fiche-grid">
+          <div class="fiche-field"><div class="fiche-field-label">Secteur</div><div class="fiche-field-val">${esc(p.secteur||'—')}</div></div>
+          <div class="fiche-field"><div class="fiche-field-label">Taille</div><div class="fiche-field-val">${esc(p.taille||'—')}</div></div>
+          <div class="fiche-field"><div class="fiche-field-label">CA n-1</div><div class="fiche-field-val">${p.ca ? fmtCA(p.ca) : '—'}</div></div>
+          <div class="fiche-field"><div class="fiche-field-label">Source</div><div class="fiche-field-val">${esc(p.source||'—')}</div></div>
+          <div class="fiche-field"><div class="fiche-field-label">Site internet</div><div class="fiche-field-val">${p.site ? `<a href="${esc(p.site)}" target="_blank">${esc(p.site.replace(/https?:\/\//,''))}</a>` : '—'}</div></div>
+          <div class="fiche-field"><div class="fiche-field-label">LinkedIn</div><div class="fiche-field-val">${p.lico ? `<a href="${esc(p.lico)}" target="_blank">Voir le profil →</a>` : '—'}</div></div>
+        </div>
+      </div>
+      ${p.dirs && p.dirs.length ? `
+      <div class="fiche-section">
+        <div class="fiche-section-title">Dirigeants</div>
+        ${p.dirs.map(d => `<div class="fiche-dir">
+          <div class="fiche-dir-name">${esc(d.nom)}</div>
+          <div class="fiche-dir-meta">
+            ${d.tel ? `<span>📞 ${esc(d.tel)}</span>` : ''}
+            ${d.email ? `<span>📧 <a href="mailto:${esc(d.email)}" style="color:var(--accent)">${esc(d.email)}</a></span>` : ''}
+            ${d.linkedin ? `<a href="${esc(d.linkedin)}" target="_blank" style="color:var(--accent)">LinkedIn →</a>` : ''}
+          </div>
+        </div>`).join('')}
+      </div>` : ''}
+      <div class="fiche-section">
+        <div class="fiche-section-title">Suivi</div>
+        <div class="fiche-grid">
+          <div class="fiche-field"><div class="fiche-field-label">Dernier contact</div><div class="fiche-field-val">${p.date ? fmtD(p.date) : '—'}</div></div>
+          <div class="fiche-field"><div class="fiche-field-label">Prochain suivi</div><div class="fiche-field-val" style="color:${p.suivi?'var(--warning)':'inherit'}">${p.suivi ? fmtD(p.suivi) : '—'}</div></div>
+        </div>
+        ${p.notes ? `<div class="fiche-field" style="margin-top:10px"><div class="fiche-field-label">Commentaires</div><div class="fiche-field-val" style="white-space:pre-wrap;line-height:1.6">${esc(p.notes)}</div></div>` : ''}
+      </div>
+      ${interactions.length ? `
+      <div class="fiche-section">
+        <div class="fiche-section-title">Historique (${interactions.length})</div>
+        ${interactions.map(it => {
+          const c = TYPE_COLORS[it.type]||'#888';
+          return `<div class="fiche-histo-item">
+            <div class="fiche-histo-dot" style="background:${c}"></div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span class="fiche-histo-type" style="background:${c}20;color:${c}">${esc(it.type)}</span>
+                <span style="font-size:11.5px;color:var(--t3)">${it.date ? fmtD(it.date) : ''}</span>
+              </div>
+              <div style="font-size:13px;color:var(--t2);line-height:1.5">${esc(it.note)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>` : ''}
+    </div>
+    <div class="fiche-ft">
+      <button class="btn btn-g" onclick="closeFiche()">Fermer</button>
+      <button class="btn btn-p" onclick="closeFiche();openModal('${p.id}')">✏️ Modifier</button>
+    </div>`;
+  document.getElementById('fiche-overlay').classList.add('open');
+}
+function closeFiche() { document.getElementById('fiche-overlay').classList.remove('open'); }
+function closeFicheOvl(e) { if (e.target === document.getElementById('fiche-overlay')) closeFiche(); }
 
 render();
 loadProspects();
